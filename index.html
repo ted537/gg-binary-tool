@@ -1,0 +1,125 @@
+<html>
+<style>
+.boundingBox {
+  border-style:solid;
+  border-width: thin;
+  background-color: white;
+  margin: 0 auto;
+}
+.textarea {
+  text-align: center;
+}
+.fill {
+  width:100%;
+  height:100%;
+}
+#entrybox {
+  width:30%;
+  height:30%;
+}
+#headerDiv {
+  display: inline-block
+}
+#buttonDiv {
+  display: inline-block;
+}
+body {
+  background-image: url("bg.png");
+  background-repeat: repeat;
+  background-size: 10px;
+}
+</style>
+<body>
+  <center>
+    <div id="headerDiv" class="boundingBox textarea">
+      <h1>WEB-BASED BINARY EDITOR</h1>
+    </div>
+  </center>
+  <div class="boundingBox" id="entryBox">
+    <textarea id="entryBox_text" class="fill"
+    placeholder="This text box is used for both input and output. To create your own binary file, replace this text with any combination of capital Gs and lowercase Gs"
+    onkeyup="this.value=this.value.replace(/([^gG])/g,'')"></textarea>
+  </div>
+  <center><div class="boundingBox" id="buttonDiv">
+    <button onclick="saveGGs()">Save File</button>
+    <button onclick="document.getElementById('input').click()">Load File</button>
+    <input id="input" type="file" name="input" style="display: none;" onchange="loadFile()"/>
+  </div></center>
+</body>
+<script src="FileSaver.js"></script>
+<script>
+function saveGGs() {
+  var text=document.getElementById("entryBox_text").value;
+  var bin=[];
+  if (text!="") {
+    for (var letter of text) {
+      switch(letter) {
+        case "g":
+          bin=bin.concat([0]);break;
+        case "G":
+          bin=bin.concat([1]);break;
+        default:
+          alert("non gG character found. Aborting save");
+          return;
+      }
+    }
+    var bytes=BitsToBytes(bin);
+    saveAs(new Blob([bytes],{type: "application/gg"}),"gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg.gg");
+  }
+}
+var file;
+var fr;
+function loadFile() {
+  file = document.getElementById("input").files[0];
+  fr = new FileReader();
+  fr.onload=loadGGs;
+  fr.readAsText(file);
+}
+function loadGGs() { //bits low to high
+  //grab file
+  //console.log(fr.result);
+  //var result = fr.result;
+  var result,aByte,ggs,pow,gg;
+  ggs="";
+  result=fr.result;
+  for (var i=0;i<result.length;i++) {
+    aByte=result.charCodeAt(i);
+    gg="";
+    for (pow=7;pow>=0;pow--) { //8 bits to a byte
+      if (aByte-Math.pow(2,pow)>=0) {
+        aByte-=Math.pow(2,pow);
+        gg='G'.concat(gg); //gs must be added backwards, there is no other way
+      }
+      else {
+        gg='g'.concat(gg);
+      }
+    }
+    ggs=ggs.concat(gg);
+  }
+  document.getElementById("entryBox_text").value=ggs;
+}
+function BitsToBytes(bits) { //bits low to high
+  var tmp_byte=0;
+  var bytes=new Uint8Array(Math.floor(bits.length/8));
+  for (var i=0;i<bits.length;i++) {
+    tmp_byte+=bits[i]*Math.pow(2,i%8); //build binary to byte
+    if (i%8==7) { //byte complete
+      bytes[((i+1)/8)-1]=tmp_byte; //index
+      tmp_byte=0; //reset tmp_byte
+    }
+  }
+  return bytes;
+}
+var gg_length=100;
+
+var stringLength=0;
+for (var i=0;i<gg_length;i++) { //console shenanigans
+  if (i%2==0) {
+    console.log("g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g ");
+  }
+  else {
+    console.log(" g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g g");
+  }
+}
+</script>
+</html>
