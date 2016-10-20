@@ -49,10 +49,10 @@ body {
 <script src="FileSaver.js"></script>
 <script>
 function saveGGs() {
-  var text=document.getElementById("entryBox_text").value;
+  var text={val:document.getElementById("entryBox_text").value};
   var bin=[];
   if (text!="") {
-    for (var letter of text) {
+    for (var letter of text.val) {
       switch(letter) {
         case "g":
           bin=bin.concat([0]);break;
@@ -63,27 +63,28 @@ function saveGGs() {
           return;
       }
     }
+    text.val=""; //free the ram
     var bytes=BitsToBytes(bin);
+    bin=[]; //free the ram
     saveAs(new Blob([bytes],{type: "application/gg"}),"gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg.gg");
   }
 }
 var file;
 var fr;
 function loadFile() {
-  file = document.getElementById("input").files[0];
+  file = {val:document.getElementById("input").files[0]};
   fr = new FileReader();
   fr.onload=loadGGs;
-  fr.readAsText(file);
+  fr.readAsText(file.val);
 }
 function loadGGs() { //bits low to high
   //grab file
   //console.log(fr.result);
   //var result = fr.result;
-  var result,aByte,ggs,pow,gg;
+  var aByte,ggs,pow,gg;
   ggs="";
-  result=fr.result;
-  for (var i=0;i<result.length;i++) {
-    aByte=result.charCodeAt(i);
+  for (var i=0;i<fr.result.length;i++) {
+    aByte=fr.result.charCodeAt(i);
     gg="";
     for (pow=7;pow>=0;pow--) { //8 bits to a byte
       if (aByte-Math.pow(2,pow)>=0) {
@@ -97,13 +98,14 @@ function loadGGs() { //bits low to high
     ggs=ggs.concat(gg);
   }
   document.getElementById("entryBox_text").value=ggs;
+  fr=null; //free ram
 }
 function BitsToBytes(bits) { //bits low to high
   var tmp_byte=0;
   var bytes=new Uint8Array(Math.floor(bits.length/8));
   for (var i=0;i<bits.length;i++) {
     tmp_byte+=bits[i]*Math.pow(2,i%8); //build binary to byte
-    if (i%8==7) { //byte complete
+    if (i%8==7) { //byte complete (yum)
       bytes[((i+1)/8)-1]=tmp_byte; //index
       tmp_byte=0; //reset tmp_byte
     }
