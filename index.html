@@ -50,22 +50,22 @@ body {
 <script>
 function saveGGs() {
   var text={val:document.getElementById("entryBox_text").value};
-  var bin=[];
-  if (text!="") {
+  var bin={val:[]};
+  if (text.val.length>0) {
     for (var letter of text.val) {
       switch(letter) {
         case "g":
-          bin=bin.concat([0]);break;
+          bin.val.push(0);break;
         case "G":
-          bin=bin.concat([1]);break;
+          bin.val.push(1);break;
         default:
           alert("non gG character found. Aborting save");
           return;
       }
     }
     text.val=""; //free the ram
-    var bytes=BitsToBytes(bin);
-    bin=[]; //free the ram
+    //alert("binary created");
+    var bytes = BitsToBytes(bin);
     saveAs(new Blob([bytes],{type: "application/gg"}),"gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg.gg");
   }
 }
@@ -75,36 +75,36 @@ function loadFile() {
   file = {val:document.getElementById("input").files[0]};
   fr = new FileReader();
   fr.onload=loadGGs;
-  fr.readAsText(file.val);
+  fr.readAsBinaryString(file.val);
 }
+var powersOfTwo=[1,2,4,8,16,32,64,128];
 function loadGGs() { //bits low to high
   //grab file
   //console.log(fr.result);
   //var result = fr.result;
   var aByte,ggs,pow,gg;
-  ggs="";
+  ggs=[];
   for (var i=0;i<fr.result.length;i++) {
     aByte=fr.result.charCodeAt(i);
     gg="";
     for (pow=7;pow>=0;pow--) { //8 bits to a byte
-      if (aByte-Math.pow(2,pow)>=0) {
-        aByte-=Math.pow(2,pow);
-        gg='G'.concat(gg); //gs must be added backwards, there is no other way
+      if (aByte-powersOfTwo[pow]>=0) {
+        aByte-=powersOfTwo[pow];
+        gg='G'+gg; //gs must be added backwards, there is no other way
       }
       else {
-        gg='g'.concat(gg);
+        gg='g'+gg;
       }
     }
-    ggs=ggs.concat(gg);
   }
-  document.getElementById("entryBox_text").value=ggs;
-  fr=null; //free ram
+  document.getElementById("entryBox_text").value=ggs.join("");
+  fr=null; //free the ram
 }
 function BitsToBytes(bits) { //bits low to high
   var tmp_byte=0;
-  var bytes=new Uint8Array(Math.floor(bits.length/8));
-  for (var i=0;i<bits.length;i++) {
-    tmp_byte+=bits[i]*Math.pow(2,i%8); //build binary to byte
+  var bytes=new Uint8Array(Math.floor(bits.val.length/8));
+  for (var i=0;i<bits.val.length;i++) {
+    tmp_byte+=bits.val[i]*powersOfTwo[i%8]; //build binary to byte
     if (i%8==7) { //byte complete (yum)
       bytes[((i+1)/8)-1]=tmp_byte; //index
       tmp_byte=0; //reset tmp_byte
